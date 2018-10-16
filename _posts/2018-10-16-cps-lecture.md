@@ -445,3 +445,5 @@ So, whenever you see a tail call, you don't even have to think about eta. Just p
       [(null? ls) (k '())][(= (car ls) 8) (multirember8 (cdr ls) k)]
       [else (multirember8 (cdr ls) (lambda (x) (k (cons (car ls) x))))])))
 ```
+
+来源：[Indiana University C311](https://cgi.soic.indiana.edu/~c311/doku.php)
