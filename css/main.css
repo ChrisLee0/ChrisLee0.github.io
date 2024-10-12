@@ -60,6 +60,7 @@ a {
   cursor: crosshair;
   border-bottom: 1px dashed Red;
   color: #000;
+  word-break: break-all;
 }
 a:hover {
   background-color: LightGrey;
@@ -116,7 +117,7 @@ table tr:nth-child(odd) {
   border-bottom: none;
 }
 .toc-item {
-  color: #d3d3d3;
+  color: #4271ae;
   border-bottom: none;
 }
 .toc-item a:hover {
