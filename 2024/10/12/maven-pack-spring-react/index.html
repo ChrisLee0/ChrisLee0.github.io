@@ -47,7 +47,7 @@
 -->
 </div>
 
-<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%83%8C%E6%99%AF"><span class="toc-text">背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9B%E5%BB%BASpring-Boot%E9%A1%B9%E7%9B%AE"><span class="toc-text">创建Spring Boot项目</span></a></li></ol>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%83%8C%E6%99%AF"><span class="toc-text">背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9B%E5%BB%BASpring-Boot%E9%A1%B9%E7%9B%AE"><span class="toc-text">创建Spring Boot项目</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9B%E5%BB%BAreact%E6%A8%A1%E5%9D%97"><span class="toc-text">创建react模块</span></a></li></ol>
 <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>一般在大型企业中不会使用Spring Boot内置的Tomcat或其他服务器，而是打包成war部署到企业定制的Web容器中，因为内置的Web容器性能弱或者不符合企业的规范。</p>
 <p>开发阶段我们会启动2个程序，一个是Tomcat，一个是npm start预览react前端。而在打包的时候我们可以把npm build生成的前端文件放到Spring Boot的static文件夹，最后打包成一个war。</p>
 <p>这篇文章有以下目标:</p>
@@ -80,6 +80,7 @@
 <p>在Tomcat Catalina Log选项卡你会看到下面的提示</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">13-Oct-2024 00:31:44.580 WARNING [RMI TCP Connection(2)-127.0.0.1] org.apache.tomcat.util.descriptor.web.WebXml.setVersion Unknown version string [5.0]. Default version will be used.</span><br></pre></td></tr></table></figure>
 <p>这个错误发生的原因是低版本的tomcat不支持高版本的Spring Boot。我使用Tomcat 8.5.76部署Spring Boot 3.3.4就遇到这个问题，把Tomcat改为10.0.12就可以启动Spring Boot了。</p>
+<h2 id="创建react模块"><a href="#创建react模块" class="headerlink" title="创建react模块"></a>创建react模块</h2><p>在Project Structure的Module点击New Module，选择React项目，名字为web，Location在当前项目新加一个web文件夹<br><img src="/images/new-react-module.png" width=800 /><br>点击OK后等待一会儿创建react项目</p>
 
 
 <!--<a href="https://blog.chrislee.fun/2024/10/12/maven-pack-spring-react/#disqus_thread" class="article-comment-link">Comments</a>
