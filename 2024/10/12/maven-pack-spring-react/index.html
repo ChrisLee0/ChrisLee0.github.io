@@ -1,0 +1,110 @@
+<html>
+<head>
+	
+	<title>Maven把Spring Boot和React打包到同一应用</title>
+	<meta name="keywords" content="Chris LEE,心神合一" />
+
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+    
+	   <link href="/css/main.css?v=3" rel="stylesheet" type="text/css" />
+
+        
+<script src="/js/util.js"></script>
+
+        <script>
+            if(isMobile()) {
+                loadjscssfile('/css/mobile.css', 'css');
+            } else {
+                loadjscssfile('/css/desktop.css', 'css');
+            }
+        </script>
+    
+
+    <link rel="alternate" type="application/atom+xml" href="/atom.xml" title="Atom feed">
+
+    
+	<link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=3"/>
+    
+    
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+
+
+<h2 class="title">Maven把Spring Boot和React打包到同一应用</h2>
+<!--
+<div style="text-align:center;margin-top: -10px;">
+<div class="article-category">
+发表于2024年10月12日
+
+
+
+
+ </div>
+-->
+</div>
+
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%83%8C%E6%99%AF"><span class="toc-text">背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9B%E5%BB%BASpring-Boot%E9%A1%B9%E7%9B%AE"><span class="toc-text">创建Spring Boot项目</span></a></li></ol>
+<h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>一般在大型企业中不会使用Spring Boot内置的Tomcat或其他服务器，而是打包成war部署到企业定制的Web容器中，因为内置的Web容器性能弱或者不符合企业的规范。</p>
+<p>开发阶段我们会启动2个程序，一个是Tomcat，一个是npm start预览react前端。而在打包的时候我们可以把npm build生成的前端文件放到Spring Boot的static文件夹，最后打包成一个war。</p>
+<p>这篇文章有以下目标:</p>
+<ol>
+<li>在Intellij IDEA创建Spring Boot和React项目</li>
+<li>前后端联调，配置Proxy避免跨域问题</li>
+<li>统一打包</li>
+<li>修复刷新页面后的404问题</li>
+</ol>
+<h2 id="创建Spring-Boot项目"><a href="#创建Spring-Boot项目" class="headerlink" title="创建Spring Boot项目"></a>创建Spring Boot项目</h2><img src="/images/create-pokemon.png"  width=600 />
+
+<p>创建后我们发现与内置Tomcat的应用有以下不同</p>
+<ol>
+<li>在pom.xml中</li>
+</ol>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">packaging</span>&gt;</span>war<span class="tag">&lt;/<span class="name">packaging</span>&gt;</span></span><br><span class="line"></span><br><span class="line">...</span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-tomcat<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">scope</span>&gt;</span>provided<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>多了一个ServletInitializer.java文件<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> org.chris.pokemon;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.springframework.boot.builder.SpringApplicationBuilder;</span><br><span class="line"><span class="keyword">import</span> org.springframework.boot.web.servlet.support.SpringBootServletInitializer;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ServletInitializer</span> <span class="keyword">extends</span> <span class="title class_">SpringBootServletInitializer</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="meta">@Override</span></span><br><span class="line">	<span class="keyword">protected</span> SpringApplicationBuilder <span class="title function_">configure</span><span class="params">(SpringApplicationBuilder application)</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">return</span> application.sources(PokemonApplication.class);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<img src="/images/app-entrances.png" width=800 /></li>
+</ol>
+<p>ServletInitializer是war启动Spring Boot的入口，PokemonApplication是jar启动Spring Boot进而启动内置Tomcat的入口。</p>
+<p>通常IntelliJ IDEA 已经创建好了artifact，类型是web exploded，没有就手动创建一个。<br><img src="/images/artifacts.png" width=800 /></p>
+<p>在Edit Configurations…创建Tomcat Server选Local，把artifact添加进Deployment选项卡。</p>
+<p><strong>注意：要把下面Application Context中的&#x2F;pokemon_war_exploded改为&#x2F;，否则你的根路径是<a target="_blank" rel="noopener" href="http://localhost:8080/pokemon_war_exploded">http://localhost:8080/pokemon_war_exploded</a> ，而不是<a target="_blank" rel="noopener" href="http://localhost:8080/">http://localhost:8080/</a> 。</strong></p>
+<p>如果有多个应用在同一个Tomcat中可以用不同的context区分，但我们只有一个就使用&#x2F;。<br><img src="/images/tomcat-deployment.png" width=800 /></p>
+<p>启动。如果看到Spring在控制台输出信息就启动成功了。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">  .   ____          _            __ _ _</span><br><span class="line"> /\\ / ___&#x27;_ __ _ _(_)_ __  __ _ \ \ \ \</span><br><span class="line">( ( )\___ | &#x27;_ | &#x27;_| | &#x27;_ \/ _` | \ \ \ \</span><br><span class="line"> \\/  ___)| |_)| | | | | || (_| |  ) ) ) )</span><br><span class="line">  &#x27;  |____| .__|_| |_|_| |_\__, | / / / /</span><br><span class="line"> =========|_|==============|___/=/_/_/_/</span><br><span class="line"></span><br><span class="line"> :: Spring Boot ::                (v3.3.4)</span><br><span class="line"></span><br><span class="line">2024-10-13T00:38:33.587+08:00  INFO 9147 --- [pokemon] [on(2)-127.0.0.1] org.chris.pokemon.ServletInitializer     : Starting ServletInitializer v0.0.1-SNAPSHOT using Java 23 with PID 9147 (/Users/chris/IdeaProjects/pokemon/target/pokemon-0.0.1-SNAPSHOT/WEB-INF/classes started by chris in /Users/chris/Work/IdeaProjects/libs/apache-tomcat-10.0.12/bin)</span><br><span class="line">2024-10-13T00:38:33.590+08:00  INFO 9147 --- [pokemon] [on(2)-127.0.0.1] org.chris.pokemon.ServletInitializer     : No active profile set, falling back to 1 default profile: &quot;default&quot;</span><br><span class="line">2024-10-13T00:38:34.504+08:00  INFO 9147 --- [pokemon] [on(2)-127.0.0.1] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 856 ms</span><br><span class="line">2024-10-13T00:38:35.191+08:00  INFO 9147 --- [pokemon] [on(2)-127.0.0.1] org.chris.pokemon.ServletInitializer     : Started ServletInitializer in 2.063 seconds (process running for 4.649)</span><br><span class="line">[2024-10-13 12:38:35,232] Artifact pokemon:war exploded: Artifact is deployed successfully</span><br><span class="line">[2024-10-13 12:38:35,233] Artifact pokemon:war exploded: Deploy took 3,575 milliseconds</span><br><span class="line">2024-10-13T00:38:35.751+08:00  INFO 9147 --- [pokemon] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet &#x27;dispatcherServlet&#x27;</span><br><span class="line">2024-10-13T00:38:35.752+08:00  INFO 9147 --- [pokemon] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms</span><br></pre></td></tr></table></figure>
+<p>如果只看到如下信息，说明Tomcat部署artifact成功，但Spring Boot没有启动</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[2024-10-13 12:31:45,583] Artifact pokemon:war exploded: Artifact is deployed successfully</span><br><span class="line">[2024-10-13 12:31:45,583] Artifact pokemon:war exploded: Deploy took 1,221 milliseconds</span><br></pre></td></tr></table></figure>
+<p>在Tomcat Catalina Log选项卡你会看到下面的提示</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">13-Oct-2024 00:31:44.580 WARNING [RMI TCP Connection(2)-127.0.0.1] org.apache.tomcat.util.descriptor.web.WebXml.setVersion Unknown version string [5.0]. Default version will be used.</span><br></pre></td></tr></table></figure>
+<p>这个错误发生的原因是低版本的tomcat不支持高版本的Spring Boot。我使用Tomcat 8.5.76部署Spring Boot 3.3.4就遇到这个问题，把Tomcat改为10.0.12就可以启动Spring Boot了。</p>
+
+
+<!--<a href="https://blog.chrislee.fun/2024/10/12/maven-pack-spring-react/#disqus_thread" class="article-comment-link">Comments</a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+    var disqus_shortname = ''; // required: replace example with your forum shortname
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+-->
+<div style="display:none">
+<script src="http://s4.cnzz.com/stat.php?id=&web_id=" language="JavaScript"></script>script>
+</div>
+
+
+
+
+
+
+</body>
+</html>
