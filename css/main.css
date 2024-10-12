@@ -82,6 +82,10 @@ hr {
 p {
   text-indent: 2em;
 }
+ul,
+ol {
+  padding-inline-start: 2.8em;
+}
 table {
   font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
   width: 100%;
